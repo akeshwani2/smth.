@@ -19,7 +19,6 @@ function page() {
       style={{ fontFamily: "var(--font-geist-mono)" }}
     >
       <div className="relative">
-        {/* Dynamic top fade */}
         <div
           className="fixed top-0 left-0 w-full h-20 bg-gradient-to-b from-black to-transparent pointer-events-none z-20"
           style={{
@@ -27,10 +26,8 @@ function page() {
             transition: "opacity 0.3s ease",
           }}
         />
-        {/* Constant bottom fade */}
         <div className="fixed bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black to-transparent pointer-events-none z-20" />
 
-        {/* Sticky footer arrow */}
         <div className="fixed bottom-6 right-6 hidden md:block z-30">
           <button className="p-3 rounded-full bg-white/80 hover:bg-white/20 transition-all">
             <svg
@@ -55,13 +52,13 @@ function page() {
             <h2 className="text-4xl text-left text-white/80 pt-6 pb-2 md:text-5xl md:leading-tight">
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="text-sm bg-white/80 text-black px-2 rounded-md w-fit">
+                  <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
                     tech
                   </div>
-                  <div className="text-sm bg-white/80 text-black px-2 rounded-md w-fit">
+                  <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
                     apple
                   </div>
-                  <div className="text-sm bg-white/80 text-black px-2 rounded-md w-fit">
+                  <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
                     ai
                   </div>
                 </div>
