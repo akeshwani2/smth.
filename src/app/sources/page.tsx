@@ -28,15 +28,21 @@ export default function SourceSelection() {
     // Fetch available sources
     const fetchSources = async () => {
       try {
-        const response = await axios.get(
-          "https://newsapi.org/v2/sources?category=technology",
-          {
-            params: {
-              apiKey: process.env.NEXT_PUBLIC_NEWS_API_KEY
-            }
-          }
+        const categories = ["technology", "business", "science"];
+        const responses = await Promise.all(
+          categories.map(category => 
+            axios.get("https://newsapi.org/v2/sources", {
+              params: {
+                category,
+                apiKey: process.env.NEXT_PUBLIC_NEWS_API_KEY
+              }
+            })
+          )
         );
-        setSources(response.data.sources);
+
+        // Combine results from all categories
+        const allSources = responses.flatMap(response => response.data.sources);
+        setSources(allSources);
       } catch (error) {
         console.error("Error fetching sources:", error);
       } finally {

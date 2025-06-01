@@ -12,6 +12,7 @@ interface NewsArticle {
     name: string;
   };
   url: string;
+  summary: string;
 }
 
 function Page() {
@@ -26,32 +27,39 @@ function Page() {
           localStorage.getItem("selectedSources") || '["techcrunch", "the-verge"]'
         );
 
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
+        // Map sources to domains (you might need a proper domain mapping)
+        const domainMap: { [key: string]: string } = {
+          'techcrunch': 'techcrunch.com/article',
+          'the-verge': 'theverge.com/tech',
+          'hacker-news': 'news.ycombinator.com',
+          'wired': 'wired.com/story' // Example additional source
+        };
 
-        const response = await axios.get(
-          `https://newsapi.org/v2/everything`, {
-            params: {
-              sources: selectedSources.join(','),
-              sortBy: 'publishedAt',
-              from: weekAgo.toISOString(),
-              apiKey: process.env.NEXT_PUBLIC_NEWS_API_KEY
-            }
-          }
-        );
+        // Build Tavily query with date filters
+        const query = `(tech news OR technology) -"stories" -"roundup" -"collection" after:${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0]} site:${selectedSources.map((s: string) => domainMap[s]).join(' OR site:')}`;
 
-        // Filter articles from the last 7 days
-        const recentArticles = response.data.articles.filter((article: NewsArticle) => {
-          const articleDate = new Date(article.publishedAt);
-          return articleDate > weekAgo;
+        // Fetch from Tavily API
+        const tavilyResponse = await axios.post('https://api.tavily.com/search', {
+          api_key: process.env.NEXT_PUBLIC_TAVILY_API_KEY,
+          query,
+          search_depth: 'advanced',
+          include_raw_content: true,
+          max_results: 15,
+          include_answer: false,
+          include_images: false
         });
 
-        if (recentArticles.length > 0) {
-          setArticle(recentArticles[0]);
-        } else {
-          console.log('No recent articles found');
-          setArticle(null);
-        }
+        // Process results with API
+        const response = await axios.post('/api/process-news', {
+          tavilyResults: tavilyResponse.data.results
+        });
+
+        setArticle({
+          ...response.data,
+          source: { name: new URL(response.data.url).hostname }
+        });
 
       } catch (error) {
         console.error('Error fetching news:', error);
@@ -138,25 +146,20 @@ function Page() {
             </div>
 
             <div className="pb-20 md:text-lg md:leading-relaxed">
-              {article?.description}
-              <div className="mt-4">
-                {article?.content?.split(' ').slice(0, -3).join(' ')}
-                {(() => { console.log(article?.content); return null; })()}
+              <div className="whitespace-pre-wrap mb-6">{article?.summary}</div>
 
-                {article?.url && (
-                  <div className="mt-6">
-                    <a 
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer" 
-                      className="text-white/60 hover:text-white underline decoration-white/20 hover:decoration-white/60 transition-all"
-                    >
-                      Read full article →
-                    </a>
-                  </div>
-                )}
-              </div>
-              
+              {article?.url && (
+                <div className="mt-6">
+                  <a 
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="text-white/60 hover:text-white underline decoration-white/20 hover:decoration-white/60 transition-all"
+                  >
+                    Read full article →
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
