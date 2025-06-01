@@ -12,18 +12,15 @@ interface NewsArticle {
     name: string;
   };
   url: string;
-  parsedContent?: string;
-  author?: string;
 }
 
 function Page() {
   const [showTopFade, setShowTopFade] = useState(false);
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [parsingProgress, setParssingProgress] = useState(0);
 
   useEffect(() => {
-    const fetchAndParseArticles = async () => {
+    const fetchRecentNews = async () => {
       try {
         const selectedSources = JSON.parse(
           localStorage.getItem("selectedSources") || '["techcrunch", "the-verge"]'
@@ -32,7 +29,7 @@ function Page() {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const newsResponse = await axios.get(
+        const response = await axios.get(
           `https://newsapi.org/v2/everything`, {
             params: {
               sources: selectedSources.join(','),
@@ -43,40 +40,8 @@ function Page() {
           }
         );
 
-        const parsedArticles = [];
-        const totalArticles = newsResponse.data.articles.length;
-
-        for (let i = 0; i < totalArticles; i++) {
-          try {
-            setParssingProgress(Math.round((i / totalArticles) * 100));
-            
-            const response = await fetch('/api/parse-article', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ url: newsResponse.data.articles[i].url }),
-            });
-            
-            if (!response.ok) throw new Error('Parse failed');
-            
-            const parsed = await response.json();
-            parsedArticles.push({
-              ...newsResponse.data.articles[i],
-              parsedContent: parsed.content,
-              author: parsed.author
-            });
-            
-            // Early exit if we have at least one valid article
-            if (parsedArticles.length >= 3) break;
-            
-          } catch (error) {
-            console.error(`Failed to parse article ${i}:`, error);
-            // Continue to next article instead of failing entire process
-          }
-        }
-
-        setParssingProgress(100);
-
-        const recentArticles = parsedArticles.filter((article: NewsArticle) => {
+        // Filter articles from the last 7 days
+        const recentArticles = response.data.articles.filter((article: NewsArticle) => {
           const articleDate = new Date(article.publishedAt);
           return articleDate > weekAgo;
         });
@@ -89,13 +54,13 @@ function Page() {
         }
 
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching news:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAndParseArticles();
+    fetchRecentNews();
   }, []);
 
   useEffect(() => {
@@ -108,18 +73,7 @@ function Page() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="h-screen bg-black text-white/60 flex flex-col items-center justify-center uppercase">
-        <div className="mb-4">Loading articles...</div>
-        <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-white/80 transition-all duration-300"
-            style={{ width: `${parsingProgress}%` }}
-          />
-        </div>
-        <div className="mt-2 text-sm">{parsingProgress}%</div>
-      </div>
-    );
+    return <div className="h-screen bg-black text-white/60 flex items-center justify-center uppercase">Loading...</div>;
   }
 
   return (
@@ -184,27 +138,25 @@ function Page() {
             </div>
 
             <div className="pb-20 md:text-lg md:leading-relaxed">
-              {article?.parsedContent ? (
-                <div dangerouslySetInnerHTML={{ __html: article.parsedContent }} />
-              ) : (
-                <>
-                  {article?.description}
-                  {article?.content?.split(' ').slice(0, -3).join(' ')}
-                </>
-              )}
+              {article?.description}
+              <div className="mt-4">
+                {article?.content?.split(' ').slice(0, -3).join(' ')}
+                {(() => { console.log(article?.content); return null; })()}
 
-              {article?.url && (
-                <div className="mt-6">
-                  <a 
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer" 
-                    className="text-white/60 hover:text-white underline decoration-white/20 hover:decoration-white/60 transition-all"
-                  >
-                    Read full article →
-                  </a>
-                </div>
-              )}
+                {article?.url && (
+                  <div className="mt-6">
+                    <a 
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer" 
+                      className="text-white/60 hover:text-white underline decoration-white/20 hover:decoration-white/60 transition-all"
+                    >
+                      Read full article →
+                    </a>
+                  </div>
+                )}
+              </div>
+              
             </div>
           </div>
         </div>
