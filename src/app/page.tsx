@@ -1,4 +1,3 @@
-import Image from "next/image";
 import GrokGradient from "./components/GrokGradient";
 import Header from "./components/Header";
 

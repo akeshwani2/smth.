@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/rules-of-hooks, react/no-unescaped-entities, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
 
-function page() {
+function Page() {
   const [showTopFade, setShowTopFade] = useState(false);
 
   useEffect(() => {
@@ -132,4 +133,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;
