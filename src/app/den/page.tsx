@@ -1,9 +1,102 @@
 /* eslint-disable react-hooks/rules-of-hooks, react/no-unescaped-entities, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+interface NewsArticle {
+  title: string;
+  publishedAt: string;
+  description: string;
+  content: string;
+  source: {
+    name: string;
+  };
+  url: string;
+  parsedContent?: string;
+  author?: string;
+}
 
 function Page() {
   const [showTopFade, setShowTopFade] = useState(false);
+  const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [parsingProgress, setParssingProgress] = useState(0);
+
+  useEffect(() => {
+    const fetchAndParseArticles = async () => {
+      try {
+        const selectedSources = JSON.parse(
+          localStorage.getItem("selectedSources") || '["techcrunch", "the-verge"]'
+        );
+
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const newsResponse = await axios.get(
+          `https://newsapi.org/v2/everything`, {
+            params: {
+              sources: selectedSources.join(','),
+              sortBy: 'publishedAt',
+              from: weekAgo.toISOString(),
+              apiKey: process.env.NEXT_PUBLIC_NEWS_API_KEY
+            }
+          }
+        );
+
+        const parsedArticles = [];
+        const totalArticles = newsResponse.data.articles.length;
+
+        for (let i = 0; i < totalArticles; i++) {
+          try {
+            setParssingProgress(Math.round((i / totalArticles) * 100));
+            
+            const response = await fetch('/api/parse-article', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: newsResponse.data.articles[i].url }),
+            });
+            
+            if (!response.ok) throw new Error('Parse failed');
+            
+            const parsed = await response.json();
+            parsedArticles.push({
+              ...newsResponse.data.articles[i],
+              parsedContent: parsed.content,
+              author: parsed.author
+            });
+            
+            // Early exit if we have at least one valid article
+            if (parsedArticles.length >= 3) break;
+            
+          } catch (error) {
+            console.error(`Failed to parse article ${i}:`, error);
+            // Continue to next article instead of failing entire process
+          }
+        }
+
+        setParssingProgress(100);
+
+        const recentArticles = parsedArticles.filter((article: NewsArticle) => {
+          const articleDate = new Date(article.publishedAt);
+          return articleDate > weekAgo;
+        });
+
+        if (recentArticles.length > 0) {
+          setArticle(recentArticles[0]);
+        } else {
+          console.log('No recent articles found');
+          setArticle(null);
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndParseArticles();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +106,21 @@ function Page() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-black text-white/60 flex flex-col items-center justify-center uppercase">
+        <div className="mb-4">Loading articles...</div>
+        <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-white/80 transition-all duration-300"
+            style={{ width: `${parsingProgress}%` }}
+          />
+        </div>
+        <div className="mt-2 text-sm">{parsingProgress}%</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -37,7 +145,7 @@ function Page() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className="w-3.5 h-3.5 text-black "
+              className="w-3.5 h-3.5 text-black"
             >
               <path
                 strokeLinecap="round"
@@ -56,75 +164,47 @@ function Page() {
                   <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
                     tech
                   </div>
-                  <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
-                    apple
-                  </div>
-                  <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
-                    ai
-                  </div>
+                  {article?.source?.name && (
+                    <div className="text-sm bg-white/10 backdrop-blur-[2px] border-[0.5px] border-white/10 rounded px-2 py-1 hover:bg-white/10 transition-all duration-200">
+                      {article.source.name.toLowerCase()}
+                    </div>
+                  )}
                 </div>
-                {/* <div className="text-base">
-                  smth.
-                </div> */}
               </div>
-              Apple Acquires Rewind.ai in Silent $1.2B Deal.
+              {article?.title || 'No title available'}
             </h2>
-            <div className="mb-6 text-sm tracking-widest">May 31, 2025</div>
+            <div className="mb-6 text-sm tracking-widest">
+              {article?.publishedAt 
+                ? new Date(article.publishedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                : 'No date available'}
+            </div>
 
             <div className="pb-20 md:text-lg md:leading-relaxed">
-              In a surprise weekend release, OpenAI has unveiled WhisperMesh, a
-              lightweight AI model designed to run entirely on-device,
-              prioritizing speed, privacy, and real-time response. While not as
-              powerful as GPT-4o, early testers say it's "shockingly fast" and
-              ideal for offline tasks like writing, summarization, and code
-              refactoring.
-              <div className="mt-4">
-                The model is optimized for M-series chips and select Android
-                hardware, hinting at OpenAI's push into deeper OS-level
-                integrations. Some speculate WhisperMesh is the foundation for a
-                rumored AI operating system. OpenAI declined to comment on
-                whether WhisperMesh will replace the ChatGPT desktop app's
-                backend.
-              </div>
-              <div className="mt-4">
-                WhisperMesh isn't just a local model — it's OpenAI's clearest
-                move yet toward an AI-first OS architecture. The model can
-                handle offline transcription, code generation, language
-                translation, and context-aware summaries without pinging a
-                server. Developers have already started probing its SDK, which
-                quietly appeared on GitHub under an MIT license. One user dubbed
-                it "Spotlight on steroids," while others speculate it's a
-                response to Apple's rumored "AI Core" layer launching at WWDC.
-                Still, the release has raised questions: Why now? And why so
-                quietly? Some insiders point to regulatory heat around
-                centralized AI, while others believe it's OpenAI's hedge against
-                the rising tide of edge computing. Either way, WhisperMesh is
-                here — and it might just live in your laptop next.
-              </div>
-              <div className="pt-16">
-                <div className=" text-white text-2xl">key points.</div>
-              </div>
-              <div className="mt-4 space-y-4">
-                <div className="text-white/60">
-                  Runs Fully On-Device No server calls. No lag. WhisperMesh
-                  thrives on speed and privacy, designed for real-time offline
-                  use.
+              {article?.parsedContent ? (
+                <div dangerouslySetInnerHTML={{ __html: article.parsedContent }} />
+              ) : (
+                <>
+                  {article?.description}
+                  {article?.content?.split(' ').slice(0, -3).join(' ')}
+                </>
+              )}
+
+              {article?.url && (
+                <div className="mt-6">
+                  <a 
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="text-white/60 hover:text-white underline decoration-white/20 hover:decoration-white/60 transition-all"
+                  >
+                    Read full article →
+                  </a>
                 </div>
-                <div className="text-white/60">
-                  Tailored for Apple Silicon + Android Optimized for M-series
-                  chips and select mobile hardware — this isn't just desktop
-                  tech. AI OS Foundations? Whispers of a full AI-first operating
-                  system are growing louder. WhisperMesh might be the seed.
-                </div>
-                <div className="text-white/60">
-                  Open Access, Quiet Rollout MIT-licensed SDK. No fanfare. Just
-                  a GitHub link and a ripple through dev channels.
-                </div>
-                <div className="text-white/60">
-                  Competitive Ripples Dubbed "Spotlight on steroids," it may be
-                  OpenAI's preemptive strike against Apple's rumored "AI Core."
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@postlight/mercury-parser": "^2.2.1",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@react-three/drei": "^10.1.2",
     "@react-three/fiber": "^9.1.2",
@@ -20,6 +21,7 @@
     "framer-motion": "^12.15.0",
     "lucide-react": "^0.511.0",
     "motion": "^12.15.0",
+    "newsapi": "^2.4.1",
     "next": "15.3.3",
     "openai-edge": "^1.2.2",
     "react": "^19.0.0",
