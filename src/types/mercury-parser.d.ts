@@ -15,10 +15,8 @@ declare module '@postlight/mercury-parser' {
     next_page_url: string | null;
   }
 
-  function parse(url: string): Promise<MercuryResponse>;
-  
   const mercuryParser: {
-    parse: typeof parse;
+    parse: (url: string) => Promise<MercuryResponse>;
   };
   
   export default mercuryParser;
