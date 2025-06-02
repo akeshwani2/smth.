@@ -1,4 +1,3 @@
-import Mercury from "@postlight/mercury-parser";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(
@@ -38,9 +37,11 @@ export async function fetchAndParseArticle(url: string): Promise<Article> {
     const prompt = `
 Analyze this news content and provide:
 
-1. Multiple paragraphs separated by TWO NEWLINES (each for distinct events)
+1. Multiple paragraphs separated by TWO NEWLINES (each for distinct events) "\n\n"
 2. Bullet-pointed key takeaways
 3. Comma-separated tags
+4. the title needs to be very very smart, and related to the topics in the news articles, not the platform. also, make it 
+interesting. Don't include name of the source in the title.
 
 Format EXACTLY like this - NO MARKDOWN:
 
@@ -48,12 +49,16 @@ First event description. This should be a full paragraph with complete sentences
 
 Second event description. Another full paragraph explaining a different news item.
 
+Third event description. Another full paragraph explaining a different news item.
+
+Fourth event description. Another full paragraph explaining a different news item.
+
 KEY_TAKEAWAYS:
 - First core takeaway
 - Second core takeaway
 - Third core takeaway
 
-TAGS (Limit to 3):
+TAGS (Limit to 3) (2 words max), the tags need to be really smart, and related to the topics in the article. Not just names of countries, but concepts:
 Tag1, Tag2, Tag3
 
 Article content:
@@ -64,13 +69,16 @@ ${parseResult.content}
     const response = await model.generateContent(prompt);
     const text = response.response.text();
 
+    // Extract AI-generated title (first line before content)
+    const aiTitle = text.split('\n\n')[0].trim();
+
     // Handle different paragraph separators
     const normalizedText = text
       .replace(/\n\s*\n/g, '\n\n') // Collapse multiple newlines
       .replace(/(\S)\n(\S)/g, '$1 $2'); // Fix mid-paragraph line breaks
 
     // Split into content and metadata sections
-    const [contentSection, ...metadataSections] = normalizedText.split('\n\nKEY_TAKEAWAYS:');
+    const [contentSection] = normalizedText.split('\n\nKEY_TAKEAWAYS:');
     const paragraphs = contentSection
       .split('\n\n')
       .map(p => p.trim())
@@ -98,7 +106,7 @@ ${parseResult.content}
       : [];
 
     return {
-      title: parseResult.title || '',
+      title: aiTitle || parseResult.title,
       content: formattedContent,
       date: new Date(parseResult.date_published || Date.now()).toLocaleDateString('en-US', { 
         year: "numeric",

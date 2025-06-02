@@ -1,7 +1,7 @@
-/* eslint-disable react-hooks/rules-of-hooks, react/no-unescaped-entities, @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
 import { fetchAndParseArticle, Article } from "@/utils/article";
+import { ArrowUpRightIcon } from "lucide-react";
 
 // The Verge's tech section URL
 const NEWS_URL = 'https://www.semafor.com/';
@@ -45,8 +45,8 @@ function Page() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white/60 flex items-center justify-center">
-        Loading latest insights...
+      <div className="min-h-screen bg-black uppercase text-white/60 flex items-center justify-center">
+        Loading latest insights
       </div>
     );
   }
@@ -66,7 +66,7 @@ function Page() {
         />
         <div className="fixed bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black to-transparent pointer-events-none z-20" />
 
-        <div className="fixed bottom-6 right-6 hidden md:block z-30">
+        {/* <div className="fixed bottom-6 right-6 hidden md:block z-30">
           <a href={article?.url} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white/80 hover:bg-white/20 transition-all">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +83,7 @@ function Page() {
               />
             </svg>
           </a>
-        </div>
+        </div> */}
 
         <div className="text-white/60 tracking-tight uppercase flex flex-col justify-center relative z-10">
           <div className="md:max-w-2xl md:mx-auto w-full px-6 md:px-0">
@@ -100,13 +100,12 @@ function Page() {
               {article?.title}
             </h2>
             <div className="mb-6 text-sm tracking-widest">{article?.date}</div>
-            <div className="mb-6 text-sm tracking-widest">{article?.url}</div>
 
             <div className="pb-20 md:text-lg md:leading-relaxed">
               {article?.content}
               
               <div className="pt-16">
-                <div className="text-white text-2xl">key points.</div>
+                <div className="text-white text-2xl">TL;DR</div>
               </div>
               <div className="mt-4 space-y-4">
                 {article?.keyPoints.map((point, index) => (
@@ -114,6 +113,10 @@ function Page() {
                     {point}
                   </div>
                 ))}
+              </div>
+              <div className="pt-12 flex items-center gap-1 border-b border-white/70 w-fit">
+                <a href={article?.url} target="_blank" rel="noopener noreferrer" className="text-white/60 ">read full article</a>
+                <span><ArrowUpRightIcon /></span>
               </div>
             </div>
           </div>

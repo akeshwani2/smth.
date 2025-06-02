@@ -17,7 +17,9 @@ declare module '@postlight/mercury-parser' {
 
   function parse(url: string): Promise<MercuryResponse>;
   
-  export default {
-    parse
+  const mercuryParser: {
+    parse: typeof parse;
   };
+  
+  export default mercuryParser;
 } 

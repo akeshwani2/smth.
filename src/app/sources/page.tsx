@@ -13,7 +13,6 @@ export default function SourceSelection() {
   const [selectedSources, setSelectedSources] = useState<string[]>([
     'wired', 'the-verge', 'techcrunch'
   ]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Load saved sources from localStorage
