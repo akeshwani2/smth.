@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Link from "next/link";
 
 interface NewsSource {
@@ -12,11 +11,9 @@ interface NewsSource {
 export default function SourceSelection() {
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([
-    'hacker-news',
-    'techcrunch',
-    'the-verge'
+    'wired', 'the-verge', 'techcrunch'
   ]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Load saved sources from localStorage
@@ -25,32 +22,21 @@ export default function SourceSelection() {
       setSelectedSources(JSON.parse(savedSources));
     }
 
-    // Fetch available sources
-    const fetchSources = async () => {
-      try {
-        const categories = ["technology", "business", "science"];
-        const responses = await Promise.all(
-          categories.map(category => 
-            axios.get("https://newsapi.org/v2/sources", {
-              params: {
-                category,
-                apiKey: process.env.NEXT_PUBLIC_NEWS_API_KEY
-              }
-            })
-          )
-        );
-
-        // Combine results from all categories
-        const allSources = responses.flatMap(response => response.data.sources);
-        setSources(allSources);
-      } catch (error) {
-        console.error("Error fetching sources:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSources();
+    // Set static sources
+    const staticSources: NewsSource[] = [
+      { id: 'wired', name: 'WIRED', category: 'Technology' },
+      { id: 'the-verge', name: 'The Verge', category: 'Technology' },
+      { id: 'the-atlantic', name: 'The Atlantic', category: 'General' },
+      { id: 'techcrunch', name: 'TechCrunch', category: 'Technology' },
+      { id: 'new-yorker', name: 'The New Yorker', category: 'General' },
+      { id: 'ars-technica', name: 'Ars Technica', category: 'Technology' },
+      { id: 'mit-tech-review', name: 'MIT Technology Review', category: 'Technology' },
+      { id: 'washington-post', name: 'Washington Post', category: 'General' },
+      { id: 'new-scientist', name: 'New Scientist', category: 'Science' },
+      { id: 'nature', name: 'Nature', category: 'Science' }
+    ];
+    
+    setSources(staticSources);
   }, []);
 
   const toggleSource = (sourceId: string) => {
@@ -62,10 +48,6 @@ export default function SourceSelection() {
     localStorage.setItem("selectedSources", JSON.stringify(newSources));
   };
 
-  if (loading) {
-    return <div className="min-h-screen bg-black text-white/60 flex items-center justify-center">Loading sources...</div>;
-  }
-
   return (
     <div className="min-h-screen bg-black uppercase text-white/60 p-8" style={{ fontFamily: "var(--font-geist-mono)" }}>
       <div className="max-w-4xl mx-auto">
@@ -73,7 +55,7 @@ export default function SourceSelection() {
           <h1 className="text-3xl text-white/80">Select News Sources</h1>
           <Link 
             href="/den" 
-            className="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all"
+            className="text-sm bg-white/10 hover:bg-white/20 px-4 py-2 border border-white/10 rounded-lg transition-all"
           >
             →
           </Link>
