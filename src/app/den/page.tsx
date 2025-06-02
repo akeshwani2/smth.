@@ -102,7 +102,16 @@ function Page() {
             <div className="mb-6 text-sm tracking-widest">{article?.date}</div>
 
             <div className="pb-20 md:text-lg md:leading-relaxed">
-              {article?.content}
+              {(article?.content || '')
+                .split('\n\n')
+                .map((paragraph, index) => (
+                  <div 
+                    key={index} 
+                    className="mb-4"
+                  >
+                    {paragraph}
+                  </div>
+                ))}
               
               <div className="pt-16">
                 <div className="text-white text-2xl">TL;DR</div>
