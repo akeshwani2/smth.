@@ -23,16 +23,10 @@ export default function SourceSelection() {
 
     // Set static sources
     const staticSources: NewsSource[] = [
-      { id: 'wired', name: 'WIRED', category: 'Technology' },
       { id: 'the-verge', name: 'The Verge', category: 'Technology' },
       { id: 'the-atlantic', name: 'The Atlantic', category: 'General' },
-      { id: 'techcrunch', name: 'TechCrunch', category: 'Technology' },
-      { id: 'new-yorker', name: 'The New Yorker', category: 'General' },
       { id: 'ars-technica', name: 'Ars Technica', category: 'Technology' },
-      { id: 'mit-tech-review', name: 'MIT Technology Review', category: 'Technology' },
-      { id: 'washington-post', name: 'Washington Post', category: 'General' },
       { id: 'new-scientist', name: 'New Scientist', category: 'Science' },
-      { id: 'nature', name: 'Nature', category: 'Science' }
     ];
     
     setSources(staticSources);
