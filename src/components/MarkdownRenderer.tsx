@@ -13,14 +13,20 @@ export default function MarkdownRenderer({ content }: { content: string }) {
         ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-2" {...props} />,
         ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-2" {...props} />,
         li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        code: ({ node, inline, ...props }) => 
-          inline ? (
-            <code className="bg-white/10 px-1.5 py-0.5 rounded" {...props} />
+        code: ({ node, className, children, ...props }) => {
+          const isInline = className?.includes('inline');
+          return isInline ? (
+            <code className="bg-white/10 px-1.5 py-0.5 rounded" {...props}>
+              {children}
+            </code>
           ) : (
             <pre className="bg-white/10 p-4 rounded-lg my-2 overflow-x-auto">
-              <code {...props} />
+              <code className={className} {...props}>
+                {children}
+              </code>
             </pre>
-          ),
+          );
+        },
         strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
         em: ({ node, ...props }) => <em className="italic" {...props} />,
         a: ({ node, ...props }) => (
