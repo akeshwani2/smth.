@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { fetchAndParseArticle, Article } from "@/utils/article";
-import { ArrowUpRightIcon } from "lucide-react";
 
 
 // The Verge's tech section URL
