@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Paperclip, ArrowUp, Lightbulb } from "lucide-react";
+import { Paperclip, ArrowUp, Lightbulb, BookOpen } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 interface Message {
@@ -17,6 +17,8 @@ export default function Home() {
   const [isInputCentered, setIsInputCentered] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isInspirationActive, setIsInspirationActive] = useState(false);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -184,18 +186,29 @@ export default function Home() {
             } transition-all duration-500`}
           >
             <div className="bg-white/7 border rounded-2xl border-white/20 focus-within:border-white/25 transition-all duration-300 w-full">
-              <input
-                type="text"
+              <textarea
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  // Auto-resize logic
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 128)}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
+                rows={1}
                 className="w-full bg-transparent text-white/70 focus:outline-none mb-4
-                    text-left py-4 px-4 placeholder-white/30 uppercase text-lg"
+                    text-left py-4 px-4 placeholder-white/30 uppercase text-lg resize-none
+                    overflow-y-auto max-h-32"
                 placeholder="feed the den..."
               />
 
               <div className="flex items-center justify-between px-4 pb-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     className="text-white/50 hover:text-white/70 transition-all 
@@ -206,7 +219,7 @@ export default function Home() {
                     <Paperclip className="w-4 h-4" />
                   </button>
 
-                  <button
+                  {/* <button
                     type="button"
                     className="text-white/50 hover:text-white/70 transition-all 
                               focus:outline-none cursor-pointer hover:scale-110 duration-200 
@@ -214,6 +227,20 @@ export default function Home() {
                     aria-label="Inspiration"
                   >
                     <Lightbulb className="w-4 h-4" />
+                  </button> */}
+                  <button
+                    type="button"
+                    onClick={() => setIsInspirationActive(!isInspirationActive)}
+                    className={`text-white/50 hover:text-white/70 transition-all 
+                              focus:outline-none cursor-pointer hover:scale-110 duration-200 
+                              border rounded-xl p-2 ${
+                                isInspirationActive 
+                                  ? 'text-white/70 border-white/40' 
+                                  : 'border-white/20 hover:border-white/40'
+                              }`}
+                    aria-label="Inspiration"
+                  >
+                    <BookOpen className="w-4 h-4" />
                   </button>
                 </div>
 
