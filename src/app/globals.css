@@ -130,3 +130,13 @@
 .animate-pulse-slow {
   animation: pulse-slow 8s ease-in-out infinite;
 }
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.canvas-panel {
+  animation: slideInRight 0.3s ease-out;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+}

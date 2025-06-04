@@ -18,6 +18,8 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isInspirationActive, setIsInspirationActive] = useState(false);
+  const [isCanvasActive, setIsCanvasActive] = useState(false);
+  const [canvasContent, setCanvasContent] = useState("");
 
 
   const scrollToBottom = () => {
@@ -136,8 +138,8 @@ export default function Home() {
     >
       <div className="flex justify-between items-center">
         <div className="text-white/70 flex flex-col">
-          <div className="text-2xl">{formatDate(currentTime)}</div>
-          <div>{formatTime(currentTime)}</div>
+          <div className="text-sm md:text-2xl">{formatDate(currentTime)}</div>
+          <div className="text-sm md:text-base">{formatTime(currentTime)}</div>
         </div>
       </div>
 
@@ -154,8 +156,8 @@ export default function Home() {
                 <div
                   className={`max-w-[80%] ${
                     message.isUser
-                      ? " text-white/70 text-base"
-                      : " text-white/70 text-base"
+                      ? " text-white/70 text-sm md:text-base"
+                      : " text-white/70 text-sm md:text-base"
                   }`}
                 >
                   <MarkdownRenderer content={message.content} />
@@ -219,26 +221,17 @@ export default function Home() {
                     <Paperclip className="w-4 h-4" />
                   </button>
 
-                  {/* <button
-                    type="button"
-                    className="text-white/50 hover:text-white/70 transition-all 
-                              focus:outline-none cursor-pointer hover:scale-110 duration-200 
-                              border border-white/20 rounded-xl p-2 hover:border-white/40"
-                    aria-label="Inspiration"
-                  >
-                    <Lightbulb className="w-4 h-4" />
-                  </button> */}
                   <button
                     type="button"
-                    onClick={() => setIsInspirationActive(!isInspirationActive)}
+                    onClick={() => setIsCanvasActive(!isCanvasActive)}
                     className={`text-white/50 hover:text-white/70 transition-all 
                               focus:outline-none cursor-pointer hover:scale-110 duration-200 
                               border rounded-xl p-2 ${
-                                isInspirationActive 
+                                isCanvasActive 
                                   ? 'text-white/70 border-white/40' 
                                   : 'border-white/20 hover:border-white/40'
                               }`}
-                    aria-label="Inspiration"
+                    aria-label="Canvas mode"
                   >
                     <BookOpen className="w-4 h-4" />
                   </button>
@@ -262,6 +255,33 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {isCanvasActive && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsCanvasActive(false)}>
+          <div 
+            className="absolute right-0 top-0 h-full w-full max-w-2xl bg-[#0a0a0a] border-l border-white/20 p-6 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl text-white/70"></h2>
+              <button
+                onClick={() => setIsCanvasActive(false)}
+                className="text-white/50 hover:text-white/70 transition-all"
+                aria-label="Close canvas"
+              >
+                ×
+              </button>
+            </div> */}
+            <textarea
+              value={canvasContent}
+              onChange={(e) => setCanvasContent(e.target.value)}
+              className="w-full h-full bg-transparent text-white/70 focus:outline-none resize-none uppercase"
+              placeholder="Start writing your essay..."
+              rows={10}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
